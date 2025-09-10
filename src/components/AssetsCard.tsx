@@ -5,7 +5,7 @@ export function AssetsCard() {
   return (
     <Card className="p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer">
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-semibold">Assets</h3>
+        <h3 className="text-lg font-semibold">Card Categories</h3>
         <Button 
           variant="ghost" 
           size="sm"
@@ -47,15 +47,15 @@ export function AssetsCard() {
       <div className="space-y-2">
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-success rounded-sm"></div>
-          <span className="text-sm">DeFi</span>
+          <span className="text-sm">Rare Holos</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-muted rounded-sm"></div>
-          <span className="text-sm">Token</span>
+          <span className="text-sm">First Edition</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-secondary rounded-sm"></div>
-          <span className="text-sm">NFT</span>
+          <span className="text-sm">Promos</span>
         </div>
       </div>
     </Card>

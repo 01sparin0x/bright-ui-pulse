@@ -7,44 +7,46 @@ export function UserProfile() {
       <Card className="p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer">
         <div className="space-y-3">
           <div>
-            <label className="text-sm text-muted-foreground">Name</label>
-            <p className="font-medium">John Doe</p>
+            <label className="text-sm text-muted-foreground">Trainer Name</label>
+            <p className="font-medium">Pokemon Trainer</p>
           </div>
           <div>
-            <label className="text-sm text-muted-foreground">Address</label>
-            <p className="font-medium text-sm">0x742d...1a2b</p>
+            <label className="text-sm text-muted-foreground">Trainer ID</label>
+            <p className="font-medium text-sm">PKMN...CARD</p>
           </div>
           <div>
-            <label className="text-sm text-muted-foreground">PFP/NFT</label>
-            <div className="w-12 h-12 bg-muted rounded-lg mt-1"></div>
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer">
-        <div className="space-y-3">
-          <h3 className="font-semibold">Connected wallet</h3>
-          <div>
-            <p className="text-sm text-muted-foreground">Address 1</p>
-            <p className="text-sm font-medium">0x742d...1a2b</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Address 2</p>
-            <p className="text-sm font-medium">0x853c...2b3c</p>
+            <label className="text-sm text-muted-foreground">Trainer Avatar</label>
+            <div className="w-12 h-12 bg-gradient-to-br from-pokemon-electric to-primary rounded-lg mt-1 flex items-center justify-center">
+              <span className="text-lg">⚡</span>
+            </div>
           </div>
         </div>
       </Card>
 
       <Card className="p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer">
         <div className="space-y-3">
-          <h3 className="font-semibold">Connected Exchanges</h3>
+          <h3 className="font-semibold">Connected Platforms</h3>
           <div>
-            <p className="text-sm text-muted-foreground">Address 1</p>
-            <p className="text-sm font-medium">Binance</p>
+            <p className="text-sm text-muted-foreground">Platform 1</p>
+            <p className="text-sm font-medium">Courtyard.io</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Address 2</p>
-            <p className="text-sm font-medium">Coinbase</p>
+            <p className="text-sm text-muted-foreground">Platform 2</p>
+            <p className="text-sm font-medium">Pokemon TCG Live</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer">
+        <div className="space-y-3">
+          <h3 className="font-semibold">Trading Platforms</h3>
+          <div>
+            <p className="text-sm text-muted-foreground">Platform 1</p>
+            <p className="text-sm font-medium">OpenSea</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Platform 2</p>
+            <p className="text-sm font-medium">VeVe Market</p>
           </div>
         </div>
       </Card>
@@ -54,7 +56,7 @@ export function UserProfile() {
           className="bg-muted hover:bg-muted/80 text-foreground border"
           onClick={() => console.log("Connect wallet clicked")}
         >
-          CONNECT WALLET
+          CONNECT PLATFORM
         </Button>
       </div>
     </div>

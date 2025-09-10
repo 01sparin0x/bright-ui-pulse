@@ -6,7 +6,7 @@ export function GrowthCard() {
   return (
     <Card className="p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer">
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-semibold">Growth</h3>
+        <h3 className="text-lg font-semibold">Portfolio Growth</h3>
         <Button 
           variant="ghost" 
           size="sm"
@@ -18,7 +18,7 @@ export function GrowthCard() {
 
       <div className="flex items-center space-x-2 text-success">
         <TrendingUp className="w-5 h-5" />
-        <span className="text-2xl font-bold">+15,6%</span>
+        <span className="text-2xl font-bold">+23,4%</span>
       </div>
 
       <div className="mt-6 h-32 bg-chart-background rounded-lg flex items-end justify-center p-4">

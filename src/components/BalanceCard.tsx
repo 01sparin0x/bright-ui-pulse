@@ -7,8 +7,8 @@ export function BalanceCard() {
     <Card className="p-6 hover:shadow-md transition-shadow duration-200 bg-accent/30 border-accent/50">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-lg font-semibold mb-2">Balance</h3>
-          <p className="text-3xl font-bold">206,029.95 $</p>
+          <h3 className="text-lg font-semibold mb-2">Collection Value</h3>
+          <p className="text-3xl font-bold">47,890.95 $</p>
         </div>
         <Button 
           variant="ghost" 
@@ -49,16 +49,16 @@ export function BalanceCard() {
 
       <div className="space-y-3">
         <div className="flex justify-between">
-          <span className="text-sm">DeFi</span>
-          <span className="text-sm font-medium">$Total</span>
+          <span className="text-sm">Base Set</span>
+          <span className="text-sm font-medium">$18,450</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-sm">Token</span>
-          <span className="text-sm font-medium">$Total</span>
+          <span className="text-sm">Neo Genesis</span>
+          <span className="text-sm font-medium">$12,890</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-sm">NFT</span>
-          <span className="text-sm font-medium">$Total</span>
+          <span className="text-sm">Crown Zenith</span>
+          <span className="text-sm font-medium">$8,900</span>
         </div>
       </div>
     </Card>

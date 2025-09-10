@@ -67,6 +67,11 @@ export default {
           green: "hsl(var(--chart-green))",
           background: "hsl(var(--chart-background))",
         },
+        pokemon: {
+          red: "hsl(var(--pokemon-red))",
+          blue: "hsl(var(--pokemon-blue))",
+          electric: "hsl(var(--pokemon-electric))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

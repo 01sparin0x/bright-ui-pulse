@@ -14,15 +14,15 @@ import {
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: Briefcase, label: "Portfolios" },
-  { icon: Wallet, label: "Wallets" },
-  { icon: ArrowLeftRight, label: "Exchanges" },
-  { icon: Coins, label: "Assets" },
-  { icon: Layers, label: "DeFi Protocols" },
-  { icon: CircleDollarSign, label: "Tokens" },
-  { icon: Image, label: "NFTs" },
-  { icon: Settings, label: "Customize" },
+  { icon: LayoutDashboard, label: "Collection", active: true },
+  { icon: Image, label: "Card Library" },
+  { icon: Briefcase, label: "Platforms" },
+  { icon: ArrowLeftRight, label: "Trade History" },
+  { icon: Coins, label: "Market Data" },
+  { icon: Layers, label: "Deck Builder" },
+  { icon: CircleDollarSign, label: "Analytics" },
+  { icon: Wallet, label: "Wallet" },
+  { icon: Settings, label: "Settings" },
   { icon: Crown, label: "PREMIUM", premium: true },
   { icon: Users, label: "Community" },
 ];
