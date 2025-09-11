@@ -19,26 +19,29 @@ import {
   Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface SidebarProps {
   onScanCard?: () => void;
 }
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Collection", active: true },
-  { icon: Image, label: "Card Library" },
-  { icon: Briefcase, label: "Platforms" },
-  { icon: ArrowLeftRight, label: "Trade History" },
-  { icon: Coins, label: "Market Data" },
-  { icon: Layers, label: "Deck Builder" },
-  { icon: CircleDollarSign, label: "Analytics" },
-  { icon: Wallet, label: "Wallet" },
-  { icon: Settings, label: "Settings" },
-  { icon: Crown, label: "PREMIUM", premium: true },
-  { icon: Users, label: "Community" },
+  { icon: LayoutDashboard, label: "Collection", path: "/collection" },
+  { icon: Image, label: "Card Library", path: "/library" },
+  { icon: Briefcase, label: "Platforms", path: "/platforms" },
+  { icon: ArrowLeftRight, label: "Trade History", path: "/trades" },
+  { icon: Coins, label: "Market Data", path: "/market" },
+  { icon: Layers, label: "Deck Builder", path: "/deck-builder" },
+  { icon: CircleDollarSign, label: "Analytics", path: "/analytics" },
+  { icon: Wallet, label: "Wallet", path: "/wallet" },
+  { icon: Settings, label: "Settings", path: "/settings" },
+  { icon: Crown, label: "PREMIUM", path: "/premium", premium: true },
+  { icon: Users, label: "Community", path: "/community" },
 ];
 
 export function Sidebar({ onScanCard }: SidebarProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   return (
     <div className="w-64 bg-sidebar border-r border-border h-screen flex flex-col">
       <div className="p-4 border-b border-border">
@@ -70,12 +73,12 @@ export function Sidebar({ onScanCard }: SidebarProps) {
               key={index}
               className={cn(
                 "w-full flex items-center px-4 py-3 text-left text-sm font-medium transition-all duration-200 hover:bg-sidebar-hover rounded-md",
-                item.active 
+                location.pathname === item.path
                   ? "bg-sidebar-active text-accent-foreground border-r-2 border-success" 
                   : "text-muted-foreground hover:text-foreground",
                 item.premium && "text-yellow-600 font-bold"
               )}
-              onClick={() => console.log(`Clicked ${item.label}`)}
+              onClick={() => navigate(item.path)}
             >
               <Icon className="w-4 h-4 mr-3" />
               {item.label}
