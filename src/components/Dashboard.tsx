@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { UserProfile } from "./UserProfile";
 import { BalanceCard } from "./BalanceCard";
@@ -6,11 +7,19 @@ import { AssetsCard } from "./AssetsCard";
 import { PortfolioCard } from "./PortfolioCard";
 import { NFTsCard } from "./NFTsCard";
 import { TransactionsCard } from "./TransactionsCard";
+import { CardScanner } from "./CardScanner";
 
 export function Dashboard() {
+  const [showScanner, setShowScanner] = useState(false);
+
+  const handleCardSaved = (card: any) => {
+    console.log('Card saved to collection:', card);
+    // Here you would typically save to your collection state/database
+  };
+
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar />
+      <Sidebar onScanCard={() => setShowScanner(true)} />
       
       <main className="flex-1 overflow-auto">
         <div className="p-6 space-y-6">
@@ -43,6 +52,13 @@ export function Dashboard() {
           </div>
         </div>
       </main>
+
+      {showScanner && (
+        <CardScanner 
+          onCardSaved={handleCardSaved}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
     </div>
   );
 }
