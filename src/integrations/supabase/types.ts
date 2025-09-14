@@ -14,7 +14,245 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          card_id: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          threshold_value: number
+          trigger_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          threshold_value: number
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          threshold_value?: number
+          trigger_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cards: {
+        Row: {
+          card_number: string
+          created_at: string
+          edition: string | null
+          id: string
+          image_url: string | null
+          language: string | null
+          name: string
+          rarity: string | null
+          set_name: string
+          tcg_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          card_number: string
+          created_at?: string
+          edition?: string | null
+          id?: string
+          image_url?: string | null
+          language?: string | null
+          name: string
+          rarity?: string | null
+          set_name: string
+          tcg_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          card_number?: string
+          created_at?: string
+          edition?: string | null
+          id?: string
+          image_url?: string | null
+          language?: string | null
+          name?: string
+          rarity?: string | null
+          set_name?: string
+          tcg_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gradings: {
+        Row: {
+          created_at: string
+          grade: number
+          grading_company: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          grade: number
+          grading_company: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          grade?: number
+          grading_company?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      market_prices: {
+        Row: {
+          card_id: string
+          condition: string | null
+          currency: string
+          date_collected: string
+          grading_id: string | null
+          id: string
+          price: number
+          source: string
+        }
+        Insert: {
+          card_id: string
+          condition?: string | null
+          currency?: string
+          date_collected?: string
+          grading_id?: string | null
+          id?: string
+          price: number
+          source: string
+        }
+        Update: {
+          card_id?: string
+          condition?: string | null
+          currency?: string
+          date_collected?: string
+          grading_id?: string | null
+          id?: string
+          price?: number
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_prices_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_prices_grading_id_fkey"
+            columns: ["grading_id"]
+            isOneToOne: false
+            referencedRelation: "gradings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          currency: string | null
+          email: string | null
+          id: string
+          notifications_enabled: boolean | null
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          email?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          email?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_collection: {
+        Row: {
+          acquisition_date: string | null
+          acquisition_price: number | null
+          card_id: string
+          condition: string | null
+          created_at: string
+          grading_id: string | null
+          id: string
+          quantity: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acquisition_date?: string | null
+          acquisition_price?: number | null
+          card_id: string
+          condition?: string | null
+          created_at?: string
+          grading_id?: string | null
+          id?: string
+          quantity?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acquisition_date?: string | null
+          acquisition_price?: number | null
+          card_id?: string
+          condition?: string | null
+          created_at?: string
+          grading_id?: string | null
+          id?: string
+          quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_collection_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_collection_grading_id_fkey"
+            columns: ["grading_id"]
+            isOneToOne: false
+            referencedRelation: "gradings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

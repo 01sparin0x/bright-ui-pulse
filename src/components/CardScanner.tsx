@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Upload, Loader2, CheckCircle, X } from 'lucide-react';
 import { createWorker } from 'tesseract.js';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PokemonCard {
   id: string;
@@ -45,6 +47,7 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const startCamera = useCallback(async () => {
     try {
@@ -186,14 +189,103 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
     }
   };
 
-  const saveCard = () => {
-    if (matchedCard) {
-      onCardSaved(matchedCard);
+  const saveCard = async () => {
+    if (matchedCard && user) {
+      try {
+        // First, check if card exists in our database
+        let { data: existingCard } = await supabase
+          .from('cards')
+          .select('id')
+          .eq('name', matchedCard.name)
+          .eq('set_name', matchedCard.set.name)
+          .single();
+
+        let cardId = existingCard?.id;
+
+        // If card doesn't exist, create it
+        if (!existingCard) {
+          const { data: newCard, error: cardError } = await supabase
+            .from('cards')
+            .insert({
+              name: matchedCard.name,
+              set_name: matchedCard.set.name,
+              card_number: matchedCard.id,
+              rarity: matchedCard.rarity,
+              image_url: matchedCard.images?.large || matchedCard.images?.small,
+              tcg_id: matchedCard.id
+            })
+            .select('id')
+            .single();
+
+          if (cardError) throw cardError;
+          cardId = newCard.id;
+        }
+
+        // Add to user's collection or update quantity
+        const { data: existingCollection } = await supabase
+          .from('user_collection')
+          .select('id, quantity')
+          .eq('user_id', user.id)
+          .eq('card_id', cardId)
+          .single();
+
+        if (existingCollection) {
+          // Update quantity
+          await supabase
+            .from('user_collection')
+            .update({ quantity: existingCollection.quantity + 1 })
+            .eq('id', existingCollection.id);
+        } else {
+          // Add new card to collection
+          await supabase
+            .from('user_collection')
+            .insert({
+              user_id: user.id,
+              card_id: cardId,
+              quantity: 1,
+              condition: 'NM'
+            });
+        }
+
+        // Add market price data if available
+        if (matchedCard.tcgplayer?.prices) {
+          const price = matchedCard.tcgplayer.prices.holofoil?.market || 
+                       matchedCard.tcgplayer.prices.normal?.market;
+          
+          if (price) {
+            await supabase
+              .from('market_prices')
+              .insert({
+                card_id: cardId,
+                source: 'TCGPlayer',
+                price: price,
+                currency: 'USD',
+                condition: 'NM'
+              });
+          }
+        }
+
+        toast({
+          title: "Card Added!",
+          description: `${matchedCard.name} has been added to your collection`
+        });
+
+        onCardSaved(matchedCard);
+        onClose();
+      } catch (error) {
+        console.error('Error saving card:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save card to collection",
+          variant: "destructive"
+        });
+      }
+    } else if (!user) {
       toast({
-        title: "Card Saved!",
-        description: `${matchedCard.name} added to your collection`,
+        title: "Sign In Required",
+        description: "Please sign in to save cards to your collection",
+        variant: "destructive"
       });
-      onClose();
     }
   };
 

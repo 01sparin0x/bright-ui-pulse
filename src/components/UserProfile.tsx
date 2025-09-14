@@ -1,62 +1,87 @@
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthModal } from "@/components/AuthModal";
+import { LogOut, Settings, Crown } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export function UserProfile() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <Card className="p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer">
-        <div className="space-y-3">
-          <div>
-            <label className="text-sm text-muted-foreground">Trainer Name</label>
-            <p className="font-medium">Pokemon Trainer</p>
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground">Trainer ID</label>
-            <p className="font-medium text-sm">PKMN...CARD</p>
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground">Trainer Avatar</label>
-            <div className="w-12 h-12 bg-gradient-to-br from-pokemon-electric to-primary rounded-lg mt-1 flex items-center justify-center">
-              <span className="text-lg">⚡</span>
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You've been signed out successfully"
+    });
+  };
+
+  if (!user) {
+    return (
+      <>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-12 w-12">
+              <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                PV
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Welcome to PokeVault!</h2>
+              <p className="text-muted-foreground">Sign in to track your Pokemon card collection</p>
             </div>
           </div>
-        </div>
-      </Card>
-
-      <Card className="p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer">
-        <div className="space-y-3">
-          <h3 className="font-semibold">Connected Platforms</h3>
-          <div>
-            <p className="text-sm text-muted-foreground">Platform 1</p>
-            <p className="text-sm font-medium">Courtyard.io</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Platform 2</p>
-            <p className="text-sm font-medium">Pokemon TCG Live</p>
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setAuthModalOpen(true)}
+            >
+              Sign In
+            </Button>
           </div>
         </div>
-      </Card>
+        <AuthModal 
+          open={authModalOpen} 
+          onOpenChange={setAuthModalOpen} 
+        />
+      </>
+    );
+  }
 
-      <Card className="p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer">
-        <div className="space-y-3">
-          <h3 className="font-semibold">Trading Platforms</h3>
-          <div>
-            <p className="text-sm text-muted-foreground">Platform 1</p>
-            <p className="text-sm font-medium">OpenSea</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Platform 2</p>
-            <p className="text-sm font-medium">VeVe Market</p>
-          </div>
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-4">
+        <Avatar className="h-12 w-12">
+          <AvatarImage src="" alt="User" />
+          <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+            {user.email?.charAt(0).toUpperCase() || 'T'}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h2 className="text-xl font-bold text-foreground">Welcome back, Trainer!</h2>
+          <p className="text-muted-foreground">{user.email}</p>
         </div>
-      </Card>
-
-      <div className="md:col-span-3">
+      </div>
+      <div className="flex items-center space-x-2">
+        <Button variant="outline" size="sm">
+          <Settings className="h-4 w-4 mr-2" />
+          Settings
+        </Button>
+        <Button variant="outline" size="sm">
+          <Crown className="h-4 w-4 mr-2" />
+          Premium
+        </Button>
         <Button 
-          className="bg-muted hover:bg-muted/80 text-foreground border"
-          onClick={() => console.log("Connect wallet clicked")}
+          variant="outline" 
+          size="sm"
+          onClick={handleSignOut}
         >
-          CONNECT PLATFORM
+          <LogOut className="h-4 w-4 mr-2" />
+          Sign Out
         </Button>
       </div>
     </div>
