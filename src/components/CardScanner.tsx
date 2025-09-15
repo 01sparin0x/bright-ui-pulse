@@ -55,7 +55,18 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
         video: { facingMode: 'environment' }
       });
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        const video = videoRef.current;
+        video.srcObject = stream;
+        // Ensure metadata is loaded before enabling scanning
+        await new Promise<void>((resolve) => {
+          if (video.readyState >= 2) return resolve();
+          const onLoaded = () => {
+            video.removeEventListener('loadedmetadata', onLoaded);
+            resolve();
+          };
+          video.addEventListener('loadedmetadata', onLoaded, { once: true });
+        });
+        await video.play();
         setIsScanning(true);
       }
     } catch (error) {
@@ -85,9 +96,16 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
     
     if (!ctx) return;
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0);
+    // Ensure video has valid dimensions
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      await new Promise((r) => setTimeout(r, 150));
+    }
+
+    const width = video.videoWidth || 1280;
+    const height = video.videoHeight || 720;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(video, 0, 0, width, height);
     
     const imageData = canvas.toDataURL('image/jpeg');
     setCapturedImage(imageData);
@@ -171,7 +189,8 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
 
   const searchPokemonCard = async (cardName: string): Promise<PokemonCard | null> => {
     try {
-      const response = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:"${cardName}"`);
+      const exactQuery = encodeURIComponent(`name:"${cardName}"`);
+      const response = await fetch(`https://api.pokemontcg.io/v2/cards?q=${exactQuery}`);
       const data = await response.json();
       
       if (data.data && data.data.length > 0) {
@@ -179,7 +198,8 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
       }
       
       // Fallback: search without exact match
-      const fallbackResponse = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${cardName}`);
+      const fallbackQuery = encodeURIComponent(`name:${cardName}`);
+      const fallbackResponse = await fetch(`https://api.pokemontcg.io/v2/cards?q=${fallbackQuery}`);
       const fallbackData = await fallbackResponse.json();
       
       return fallbackData.data?.[0] || null;
