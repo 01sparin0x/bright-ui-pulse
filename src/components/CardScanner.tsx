@@ -191,31 +191,43 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
     setIsProcessing(true);
     try {
       // OCR Processing
-      const worker = await createWorker('eng');
+      const worker = await createWorker('eng+fra');
+      await worker.setParameters({
+        tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'- 0123456789",
+        preserve_interword_spaces: '1',
+      });
       const { data: { text } } = await worker.recognize(imageData);
       await worker.terminate();
       
       setDetectedText(text);
       
-      // Extract card information from OCR text
-      const cardName = extractCardName(text);
-      
-      if (cardName) {
-        // Search Pokemon TCG API
-        const matchedCard = await searchPokemonCard(cardName);
-        if (matchedCard) {
-          setMatchedCard(matchedCard);
-          toast({
-            title: "Card Found!",
-            description: `Detected: ${matchedCard.name}`,
-          });
-        } else {
-          toast({
-            title: "Card Not Found",
-            description: "Try adjusting the image or search manually.",
-            variant: "destructive"
-          });
+      // Try extracting Pokédex number first (more reliable across languages)
+      const pokedex = extractPokedexNumber(text);
+      let found: PokemonCard | null = null;
+      if (pokedex) {
+        found = await searchPokemonByPokedex(pokedex);
+      }
+
+      // Fallback to name-based extraction and search
+      if (!found) {
+        const cardName = extractCardName(text);
+        if (cardName) {
+          found = await searchPokemonCard(cardName);
         }
+      }
+
+      if (found) {
+        setMatchedCard(found);
+        toast({
+          title: "Card Found!",
+          description: `Detected: ${found.name}`,
+        });
+      } else {
+        toast({
+          title: "Card Not Found",
+          description: "Try adjusting the image or search manually.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Processing error:', error);
@@ -275,6 +287,37 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
 
     const best = tokens.sort((a,b) => b.length - a.length)[0];
     return best ? best.charAt(0).toUpperCase() + best.slice(1).toLowerCase() : '';
+  };
+
+  const extractPokedexNumber = (text: string): number | null => {
+    const m = text.match(/(?:No\.?|N[°º])\s*[:#]?\s*(\d{1,4})/i);
+    if (m) {
+      const num = parseInt(m[1], 10);
+      if (!isNaN(num) && num > 0 && num < 10000) return num;
+    }
+    // Loose fallback: any standalone number that could be a Pokédex id
+    const m2 = text.match(/\b(\d{1,4})\b\s*(?:Pok[eé]mon)?/i);
+    if (m2) {
+      const num = parseInt(m2[1], 10);
+      if (!isNaN(num) && num > 0 && num < 10000) return num;
+    }
+    return null;
+  };
+
+  const searchPokemonByPokedex = async (dex: number): Promise<PokemonCard | null> => {
+    try {
+      const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(`nationalPokedexNumbers:${dex}`)}&pageSize=10`;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data?.data?.length) {
+        return data.data[0];
+      }
+      return null;
+    } catch (e) {
+      console.error('Pokedex search error:', e);
+      return null;
+    }
   };
 
   const searchPokemonCard = async (cardName: string): Promise<PokemonCard | null> => {
