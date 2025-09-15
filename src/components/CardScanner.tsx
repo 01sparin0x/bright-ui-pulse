@@ -117,16 +117,77 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Reject unsupported formats early (e.g., HEIC)
+    const supported = /image\/(jpeg|png|webp)/i.test(file.type);
+    if (!supported) {
+      toast({
+        title: "Unsupported image format",
+        description: "Please upload a JPG, PNG, or WEBP image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const imageData = e.target?.result as string;
-      setCapturedImage(imageData);
-      await processImage(imageData);
+      try {
+        const src = e.target?.result as string;
+        // Normalize: draw to canvas and export as JPEG to avoid formats Tesseract can't read
+        const img = new Image();
+        img.onload = async () => {
+          try {
+            const maxDim = 1600; // downscale very large images to reduce OCR errors
+            const ratio = Math.min(maxDim / img.width, maxDim / img.height, 1);
+            const targetW = Math.max(1, Math.round(img.width * ratio));
+            const targetH = Math.max(1, Math.round(img.height * ratio));
+
+            const canvas = canvasRef.current || document.createElement('canvas');
+            canvas.width = targetW;
+            canvas.height = targetH;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('Canvas not supported');
+            ctx.drawImage(img, 0, 0, targetW, targetH);
+
+            const jpegData = canvas.toDataURL('image/jpeg', 0.92);
+            setCapturedImage(jpegData);
+            await processImage(jpegData);
+          } catch (err) {
+            console.error('Upload normalize error:', err);
+            toast({
+              title: "Processing Error",
+              description: "Could not process the uploaded image. Try another file.",
+              variant: "destructive",
+            });
+          }
+        };
+        img.onerror = () => {
+          toast({
+            title: "Image Load Error",
+            description: "We couldn't read the image. Please try a different file.",
+            variant: "destructive",
+          });
+  }
+        img.src = src;
+      } catch (err) {
+        console.error('File read error:', err);
+        toast({
+          title: "Upload Error",
+          description: "Failed to read the file. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+    reader.onerror = () => {
+      toast({
+        title: "Upload Error",
+        description: "Could not read the selected file.",
+        variant: "destructive",
+      });
     };
     reader.readAsDataURL(file);
-  }, []);
+  }, [toast, processImage]);
 
-  const processImage = async (imageData: string) => {
+  async function processImage(imageData: string) {
     setIsProcessing(true);
     try {
       // OCR Processing
@@ -346,7 +407,7 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               onChange={handleFileUpload}
               className="hidden"
             />
