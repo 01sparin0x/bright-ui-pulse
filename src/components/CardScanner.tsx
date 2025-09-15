@@ -230,46 +230,93 @@ export function CardScanner({ onCardSaved, onClose }: CardScannerProps) {
   };
 
   const extractCardName = (text: string): string => {
-    // Simple extraction logic - look for Pokemon card patterns
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 2);
-    
-    // Pokemon names are usually at the top, exclude common TCG terms
-    const excludeTerms = ['hp', 'basic', 'stage', 'evolution', 'pokemon', 'energy', 'trainer'];
-    
-    for (const line of lines) {
-      const cleanLine = line.toLowerCase();
-      if (!excludeTerms.some(term => cleanLine.includes(term)) && 
-          line.length >= 3 && line.length <= 25 &&
-          /^[a-zA-Z\s\-']+$/.test(line)) {
-        return line;
+    // Heuristic extraction: look for a short, name-like line near the top
+    const rawLines = text.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 15);
+
+    const normalize = (s: string) =>
+      s
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[“”«»]/g, '"')
+        .replace(/[’‘]/g, "'")
+        .replace(/[^a-zA-Z\s\-']/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    // Exclude common TCG terms (EN + FR)
+    const excludeTerms = [
+      'hp','pv','basic','stage','niveau','evolution','evolu','pokemon','energy','trainer',
+      'attaque','ability','talent','weakness','resistance','retreat','retira','rare','rares'
+    ];
+
+    // First pass: short 1-3 word lines that don't contain common TCG terms
+    for (const line of rawLines) {
+      const cleaned = normalize(line);
+      if (!cleaned) continue;
+      const low = cleaned.toLowerCase();
+      if (excludeTerms.some(t => low.includes(t))) continue;
+
+      const words = cleaned.split(' ');
+      const lengthOk = cleaned.length >= 3 && cleaned.length <= 24;
+      const wordsOk = words.length >= 1 && words.length <= 3;
+
+      if (lengthOk && wordsOk) {
+        // Title-case the name
+        return words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
       }
     }
-    
-    return lines[0] || '';
+
+    // Fallback: take the longest token from the top lines
+    const tokens = rawLines
+      .map(normalize)
+      .join(' ')
+      .split(' ')
+      .filter(w => /^[A-Za-z'-]{3,}$/.test(w));
+
+    const best = tokens.sort((a,b) => b.length - a.length)[0];
+    return best ? best.charAt(0).toUpperCase() + best.slice(1).toLowerCase() : '';
   };
 
   const searchPokemonCard = async (cardName: string): Promise<PokemonCard | null> => {
+    const sanitize = (s: string) =>
+      s
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z\s'-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
     try {
-      const exactQuery = encodeURIComponent(`name:"${cardName}"`);
-      const response = await fetch(`https://api.pokemontcg.io/v2/cards?q=${exactQuery}`);
-      const data = await response.json();
-      
-      if (data.data && data.data.length > 0) {
-        return data.data[0];
+      const name = sanitize(cardName);
+      const words = name.split(' ').filter(w => w.length > 2);
+      const queries: string[] = [];
+
+      if (name) queries.push(`name:"${name}"`);
+      if (words.length >= 2) queries.push(`name:"${words[0]} ${words[1]}"`);
+      if (words.length >= 1) queries.push(`name:${words[0]}*`);
+      if (words.length >= 2) queries.push(`name:${words[0]} AND name:${words[1]}`);
+      if (words.length >= 1) queries.push(`name:${words[0]}~2`);
+
+      for (const q of queries) {
+        try {
+          const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=5`;
+          const res = await fetch(url);
+          if (!res.ok) continue;
+          const data = await res.json();
+          if (data?.data?.length) {
+            return data.data[0];
+          }
+        } catch (_err) {
+          // Try next query strategy
+          continue;
+        }
       }
-      
-      // Fallback: search without exact match
-      const fallbackQuery = encodeURIComponent(`name:${cardName}`);
-      const fallbackResponse = await fetch(`https://api.pokemontcg.io/v2/cards?q=${fallbackQuery}`);
-      const fallbackData = await fallbackResponse.json();
-      
-      return fallbackData.data?.[0] || null;
+
+      return null;
     } catch (error) {
       console.error('API search error:', error);
       return null;
     }
   };
-
   const saveCard = async () => {
     if (matchedCard && user) {
       try {
